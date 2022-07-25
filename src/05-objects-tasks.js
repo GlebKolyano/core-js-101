@@ -6,7 +6,6 @@
  *                                                                                                *
  ************************************************************************************************ */
 
-
 /**
  * Returns the rectangle object with width and height parameters and getArea() method
  *
@@ -27,7 +26,6 @@ function Rectangle(width, height) {
   this.getArea = () => this.width * this.height;
 }
 
-
 /**
  * Returns the JSON representation of specified object
  *
@@ -41,7 +39,6 @@ function Rectangle(width, height) {
 function getJSON(obj) {
   return JSON.stringify(obj);
 }
-
 
 /**
  * Returns the object of specified type from JSON representation
@@ -60,7 +57,6 @@ function fromJSON(proto, json) {
 
   return new proto.constructor(...values);
 }
-
 
 /**
  * Css selectors builder
@@ -117,35 +113,86 @@ function fromJSON(proto, json) {
  */
 
 const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
+  selector: '',
+
+  element(value) {
+    this.checkPosition(1);
+    const object = this.createObject();
+    object.selector = this.selector + value;
+    object.position = 1;
+    return object;
   },
 
-  id(/* value */) {
-    throw new Error('Not implemented');
+  id(value) {
+    this.checkPosition(2);
+    const object = this.createObject();
+    object.selector = `${this.selector}#${value}`;
+    object.position = 2;
+    return object;
   },
 
-  class(/* value */) {
-    throw new Error('Not implemented');
+  class(value) {
+    this.checkPosition(3);
+    const object = this.createObject();
+    object.selector = `${this.selector}.${value}`;
+    object.position = 3;
+    return object;
   },
 
-  attr(/* value */) {
-    throw new Error('Not implemented');
+  attr(value) {
+    this.checkPosition(4);
+    const object = this.createObject();
+    object.selector = `${this.selector}[${value}]`;
+    object.position = 4;
+    return object;
   },
 
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
+  pseudoClass(value) {
+    this.checkPosition(5);
+    const object = this.createObject();
+    object.selector = `${this.selector}:${value}`;
+    object.position = 5;
+    return object;
   },
 
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
+  pseudoElement(value) {
+    this.checkPosition(6);
+    const object = this.createObject();
+    object.selector = `${this.selector}::${value}`;
+    object.position = 6;
+    return object;
   },
 
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  combine(selector1, combinator, selector2) {
+    const object = this.createObject();
+    object.selector = `${selector1.selector} ${combinator} ${selector2.selector}`;
+    return object;
+  },
+
+  stringify() {
+    return this.selector;
+  },
+
+  createObject() {
+    return Object.create(cssSelectorBuilder);
+  },
+
+  checkPosition(position) {
+    if (position < this.position) {
+      throw new Error(
+        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element',
+      );
+    }
+    if (
+      (position === 1 || position === 2 || position === 6)
+      && position === this.position
+    ) {
+      throw new Error(
+        'Element, id and pseudo-element should not occur more then one time inside the selector',
+      );
+    }
   },
 };
-
 
 module.exports = {
   Rectangle,
